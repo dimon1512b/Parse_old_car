@@ -1,6 +1,7 @@
-import requests
 import re
 import sqlite3 as sq
+
+import requests
 
 URL = 'https://auto.ria.com/api/search/auto?indexName=auto%2Corder_auto%2Cnewauto_search&price_ot=1&currency=1' \
       '&abroad=2&custom=1&page=0&countpage=20&with_feedback_form=1&withOrderAutoInformer=1&with_last_id=1'
@@ -16,14 +17,15 @@ def get_data_all_cars(ids, url):
 		json_data = requests.get(our_url).json()
 		print(f'Parse data car with id:{id_}')
 		data_cars.append({
-			"marka": json_data["marka"],
-			"model": json_data["model"],
-			"year": json_data["year"],
-			"race": json_data["race"],
-			"city": json_data["cityLocative"],
-			"USD": json_data["USD"],
-			"EUR": json_data["EUR"],
-			"UAH": json_data["UAH"]
+			"marka": json_data.get("marka", 'Undefined value'),  # dict.get(key, default)
+			"model": json_data.get("model", 'Undefined value'),
+			"year": json_data.get("year", 'Undefined value'),
+			"race": json_data.get("race", 'Undefined value'),
+			"city": json_data.get("cityLocative", 'Undefined value'),
+			"USD": json_data.get("USD", 'Undefined value'),
+			"EUR": json_data.get("EUR", 'Undefined value'),
+			"UAH": json_data.get("UAH", 'Undefined value'),
+			"id": id_
 		})
 	print('Result:...')
 
@@ -39,14 +41,16 @@ def get_ids_and_pages(url, params=None):
 	if num_of_pages > 0:
 		if COUNT_PAGES < num_of_pages:
 			for page in range(COUNT_PAGES):
-				print(f'Parse ids on page {page+1}/{COUNT_PAGES}...')
-				json_var = requests.get(url, params={'page': page}).json()
+				print(f'Parse ids on page {page + 1}/{COUNT_PAGES}...')
+				json_var = requests.get(url).json()
 				ids.extend(json_var["result"]["search_result"]["ids"])
+				url = url.replace(f'page={page}', f'page={page + 1}')
 		else:
 			for page in range(num_of_pages + 1):
-				print(f'Parse ids on page {page+1}/{COUNT_PAGES}...')
-				json_var = requests.get(url, params={'page': page}).json()
+				print(f'Parse ids on page {page + 1}/{COUNT_PAGES}...')
+				json_var = requests.get(url).json()
 				ids.extend(json_var["result"]["search_result"]["ids"])
+				url = url.replace(f'page={page}', f'page={page + 1}')
 	else:
 		print(f'Parse ids on page 1/{COUNT_PAGES}...')
 		ids.extend(json_var["result"]["search_result"]["ids"])
@@ -54,7 +58,6 @@ def get_ids_and_pages(url, params=None):
 
 
 get_data_all_cars(get_ids_and_pages(URL), URL_CURRENT_CAR)
-
 
 with sq.connect("cars.db") as con:
 	cur = con.cursor()
@@ -68,13 +71,23 @@ with sq.connect("cars.db") as con:
 	city TEXT,
 	USD INTEGER,
 	EUR INTEGER,
-	UAH INTEGER
+	UAH INTEGER,
+	ID INTEGER
 	)""")
-	param = """INSERT INTO cars VALUES (?,?,?,?,?,?,?,?)"""
+	param = """INSERT INTO cars VALUES (?,?,?,?,?,?,?,?,?)"""
+	data_from_db = """SELECT * from cars"""
+	cur.execute(data_from_db)
+	records = cur.fetchall()
+	ids_db = []
+	for el in records:
+		ids_db.append(str(el[8]))
 	for car in data_cars:
 		data_tuple = (car['marka'], car['model'], car['year'], car['race'], car['city'], car['USD'], car['EUR'],
-		              car['UAH'])
-		cur.execute(param, data_tuple)
+		              car['UAH'], car['id'])
+		if car['id'] not in ids_db:
+			cur.execute(param, data_tuple)
+		else:
+			print(f'car with id {car["id"]} was not add')
 	print('The file was create and full')
 
 	con.commit()
