@@ -11,7 +11,6 @@ data_cars = []
 
 
 def get_data_all_cars(ids, url):
-	our_url = ''
 	for id_ in ids:
 		our_url = url.replace(re.search(re_ex, url).group(0), id_)
 		json_data = requests.get(our_url).json()
@@ -33,7 +32,6 @@ def get_data_all_cars(ids, url):
 def get_ids_and_pages(url, params=None):
 	print('Send get request to url...')
 	json_var = requests.get(url, params=params).json()
-	num_of_pages = 0
 	ids = []
 	if (json_var["result"]["search_result"]["count"]) % 20 == 0:
 		num_of_pages = ((json_var["result"]["search_result"]["count"]) // 20) - 1
