@@ -1,6 +1,6 @@
 import requests
 import re
-import sqlite3
+import sqlite3 as sq
 
 URL = 'https://auto.ria.com/api/search/auto?indexName=auto%2Corder_auto%2Cnewauto_search&price_ot=1&currency=1' \
       '&abroad=2&custom=1&page=0&countpage=20&with_feedback_form=1&withOrderAutoInformer=1&with_last_id=1'
@@ -26,7 +26,6 @@ def get_data_all_cars(ids, url):
 			"UAH": json_data["UAH"]
 		})
 	print('Result:...')
-	print(data_cars)
 
 
 def get_ids_and_pages(url, params=None):
@@ -55,3 +54,27 @@ def get_ids_and_pages(url, params=None):
 
 
 get_data_all_cars(get_ids_and_pages(URL), URL_CURRENT_CAR)
+
+
+with sq.connect("cars.db") as con:
+	cur = con.cursor()
+
+	cur.execute("""
+	CREATE TABLE IF NOT EXISTS cars (
+	marka TEXT,
+	model TEXT,
+	year INTEGER,
+	race TEXT,
+	city TEXT,
+	USD INTEGER,
+	EUR INTEGER,
+	UAH INTEGER
+	)""")
+	param = """INSERT INTO cars VALUES (?,?,?,?,?,?,?,?)"""
+	for car in data_cars:
+		data_tuple = (car['marka'], car['model'], car['year'], car['race'], car['city'], car['USD'], car['EUR'],
+		              car['UAH'])
+		cur.execute(param, data_tuple)
+	print('The file was create and full')
+
+	con.commit()
