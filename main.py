@@ -22,9 +22,9 @@ def get_data_all_cars(ids, url):
 			"year": json_data.get("year", 'Undefined value'),
 			"race": json_data.get("race", 'Undefined value'),
 			"city": json_data.get("cityLocative", 'Undefined value'),
-			"USD": json_data.get("USD", 'Undefined value'),
-			"EUR": json_data.get("EUR", 'Undefined value'),
-			"UAH": json_data.get("UAH", 'Undefined value'),
+			"USD": json_data.get("USD", 'Undefined value').replace(' ', ''),
+			"EUR": json_data.get("EUR", 'Undefined value').replace(' ', ''),
+			"UAH": json_data.get("UAH", 'Undefined value').replace(' ', ''),
 			"id": id_
 		})
 	print('Result:...')
