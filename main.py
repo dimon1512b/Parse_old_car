@@ -72,22 +72,19 @@ with sq.connect("cars.db") as con:
 	USD INTEGER,
 	EUR INTEGER,
 	UAH INTEGER,
-	ID INTEGER
+	ID INTEGER PRIMARY KEY
 	)""")
 	param = """INSERT INTO cars VALUES (?,?,?,?,?,?,?,?,?)"""
-	data_from_db = """SELECT * from cars"""
-	cur.execute(data_from_db)
-	records = cur.fetchall()
-	ids_db = []
-	for el in records:
-		ids_db.append(str(el[8]))
 	for car in data_cars:
 		data_tuple = (car['marka'], car['model'], car['year'], car['race'], car['city'], car['USD'], car['EUR'],
 		              car['UAH'], car['id'])
-		if car['id'] not in ids_db:
+		try:
 			cur.execute(param, data_tuple)
-		else:
-			print(f'car with id {car["id"]} was not add')
+		except sq.IntegrityError:
+			query = """UPDATE cars SET marka = ?, model = ?, year = ?, race = ?, city = ?, USD = ?, EUR = ?, 
+			UAH = ?, id = ? WHERE ID = ?"""
+			data_update = (*data_tuple, car['id'])
+			cur.execute(query, data_update)
+			print(f'Car with id {car["id"]} was update in DB')
 	print('The file was create and full')
-
 	con.commit()
