@@ -2,7 +2,7 @@ import re
 import sqlite3 as sq
 import datetime
 import requests
-from django.utils.dateparse import parse_datetime
+#from django.utils.dateparse import parse_datetime
 URL = 'https://auto.ria.com/api/search/auto?indexName=auto%2Corder_auto%2Cnewauto_search&price_ot=1&currency=1' \
       '&abroad=2&custom=1&page=0&countpage=20&with_feedback_form=1&withOrderAutoInformer=1&with_last_id=1'
 URL_CURRENT_CAR = 'https://auto.ria.com/uk/bu/blocks/json/2999/299858/29985840?langId=4&lang_id=4'
